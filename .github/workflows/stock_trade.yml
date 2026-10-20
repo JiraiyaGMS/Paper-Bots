@@ -1,0 +1,29 @@
+# Put this file at .github/workflows/stock_trade.yml in your repo
+name: stock-paper-trade
+
+on:
+  schedule:
+    # every 15 min, Mon-Fri, 13:00-21:59 UTC (covers market hours in both
+    # daylight and standard time; the bot checks the market clock itself)
+    - cron: "7,22,37,52 13-21 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: stock-trader
+  cancel-in-progress: false
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python stock_bot.py
+        env:
+          ALPACA_API_KEY: ${{ secrets.STOCK_ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.STOCK_ALPACA_SECRET_KEY }}
+          START_EQUITY: "100"
